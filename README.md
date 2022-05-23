@@ -1,9 +1,5 @@
 # productos_app
 
-Blank login screen ready to add functionalities
-
-![image](https://github.com/IvanLpJc/blank_login_page/blob/main/example.gif)
-
 ## Getting Started
 
 This project is a starting point for a Flutter application.
