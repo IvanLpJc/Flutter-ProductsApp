@@ -15,27 +15,28 @@ class ProductScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Product product =
-        Provider.of<ProductsService>(context).selectedProduct;
+    final productService = Provider.of<ProductsService>(context);
     return ChangeNotifierProvider(
         //De esta forma siempre tenemos acceso a la instancia del ProductFormProvider
         //cuando estamos en esta pantalla
         //Así también tenemos acceso a el desde la cámara
-        create: (_) => ProductFormProvider(product),
-        child: _ProductScreenBody(product: product));
+        create: (_) => ProductFormProvider(productService.selectedProduct),
+        child: _ProductScreenBody(productService: productService));
   }
 }
 
 class _ProductScreenBody extends StatelessWidget {
   const _ProductScreenBody({
     Key? key,
-    required this.product,
+    required this.productService,
   }) : super(key: key);
 
-  final Product product;
+  final ProductsService productService;
 
   @override
   Widget build(BuildContext context) {
+    final productForm = Provider.of<ProductFormProvider>(context);
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -44,7 +45,7 @@ class _ProductScreenBody extends StatelessWidget {
               Stack(
                 children: [
                   ProductImage(
-                    image: product.image,
+                    image: productForm.product.image,
                   ),
                   Positioned(
                       top: 40,
@@ -85,7 +86,11 @@ class _ProductScreenBody extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.save_alt_outlined),
-        onPressed: () {},
+        onPressed: () async {
+          if (!productForm.isValidForm()) return;
+          await productService.createOrUpdateProduct(productForm.product);
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
       ),
     );
   }
@@ -102,6 +107,7 @@ class _ProductForm extends StatelessWidget {
       width: double.infinity,
       decoration: _buildBoxDecoration(),
       child: Form(
+        key: productForm.formKey,
         child: Column(
           children: [
             const SizedBox(

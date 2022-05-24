@@ -31,13 +31,14 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.13.4
+  image_picker: ^0.8.5+3
   loading_gifs: ^0.3.0
   progress_indicator_button: ^0.0.3
   progress_state_button: ^1.0.4
   provider: ^6.0.2
 
 dev_dependencies:
-  flutter_lints: ^1.0.0
+  flutter_lints: ^2.0.1
   flutter_test:
     sdk: flutter
 

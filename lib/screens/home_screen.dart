@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:productos_app/models/models.dart';
 import 'package:productos_app/screens/screens.dart';
 import 'package:productos_app/services/services.dart';
@@ -15,6 +16,9 @@ class HomeScreen extends StatelessWidget {
     final productsService = Provider.of<ProductsService>(context);
 
     if (productsService.isLoading) return LoadingScreen();
+
+    productsService.products
+        .sort(((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase())));
 
     return Scaffold(
       appBar: AppBar(
@@ -37,7 +41,11 @@ class HomeScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
-        onPressed: () {},
+        onPressed: () {
+          productsService.selectedProduct =
+              Product(available: false, name: '', price: 0);
+          Navigator.pushNamed(context, ProductScreen.routeName);
+        },
       ),
     );
   }
