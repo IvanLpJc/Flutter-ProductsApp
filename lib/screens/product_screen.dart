@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:productos_app/models/models.dart';
-import 'package:productos_app/models/models.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:productos_app/providers/product_form_provider.dart';
 import 'package:productos_app/services/products_service.dart';
 import 'package:productos_app/ui/input_decorations.dart';
@@ -55,20 +54,24 @@ class _ProductScreenBody extends StatelessWidget {
                         icon: const Icon(
                           Icons.arrow_back_ios_new,
                           size: 40,
-                          color: Colors.white,
+                          color: Colors.indigo,
                         ),
                       )),
                   Positioned(
                       top: 40,
                       right: 40,
                       child: IconButton(
-                        onPressed: () {
-                          //TODO Cámara o galería
+                        onPressed: () async {
+                          final picker = ImagePicker();
+                          final XFile? pickedImage = await picker.pickImage(
+                              source: ImageSource.camera, imageQuality: 100);
+                          productService
+                              .updateSelectedProductImage(pickedImage?.path);
                         },
                         icon: const Icon(
                           Icons.camera_alt_outlined,
                           size: 40,
-                          color: Colors.white,
+                          color: Colors.indigo,
                         ),
                       )),
                 ],
@@ -85,12 +88,24 @@ class _ProductScreenBody extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.save_alt_outlined),
-        onPressed: () async {
-          if (!productForm.isValidForm()) return;
-          await productService.createOrUpdateProduct(productForm.product);
-          FocusManager.instance.primaryFocus?.unfocus();
-        },
+        onPressed: productService.isSaving
+            ? null
+            : () async {
+                if (!productForm.isValidForm()) return;
+
+                FocusManager.instance.primaryFocus?.unfocus();
+
+                final String? imageUrl = await productService.uploadImage();
+
+                if (imageUrl != null) productForm.product.image = imageUrl;
+
+                await productService.createOrUpdateProduct(productForm.product);
+              },
+        child: productService.isSaving
+            ? const CircularProgressIndicator(
+                color: Colors.white,
+              )
+            : const Icon(Icons.save_alt_outlined),
       ),
     );
   }
