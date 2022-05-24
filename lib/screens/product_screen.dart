@@ -1,13 +1,38 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:productos_app/models/models.dart';
+import 'package:productos_app/models/models.dart';
+import 'package:productos_app/providers/product_form_provider.dart';
+import 'package:productos_app/services/products_service.dart';
 import 'package:productos_app/ui/input_decorations.dart';
 import 'package:productos_app/widgets/widgets.dart';
+import 'package:provider/provider.dart';
 
 class ProductScreen extends StatelessWidget {
   static const routeName = 'product';
 
   const ProductScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final Product product =
+        Provider.of<ProductsService>(context).selectedProduct;
+    return ChangeNotifierProvider(
+        //De esta forma siempre tenemos acceso a la instancia del ProductFormProvider
+        //cuando estamos en esta pantalla
+        //Así también tenemos acceso a el desde la cámara
+        create: (_) => ProductFormProvider(product),
+        child: _ProductScreenBody(product: product));
+  }
+}
+
+class _ProductScreenBody extends StatelessWidget {
+  const _ProductScreenBody({
+    Key? key,
+    required this.product,
+  }) : super(key: key);
+
+  final Product product;
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +43,9 @@ class ProductScreen extends StatelessWidget {
             children: [
               Stack(
                 children: [
-                  const ProductImage(),
+                  ProductImage(
+                    image: product.image,
+                  ),
                   Positioned(
                       top: 40,
                       left: 30,
@@ -45,8 +72,8 @@ class ProductScreen extends StatelessWidget {
                       )),
                 ],
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 15),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: _ProductForm(),
               ),
               const SizedBox(
@@ -57,7 +84,7 @@ class ProductScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.save_alt_outlined),
+        child: const Icon(Icons.save_alt_outlined),
         onPressed: () {},
       ),
     );
@@ -65,12 +92,11 @@ class ProductScreen extends StatelessWidget {
 }
 
 class _ProductForm extends StatelessWidget {
-  const _ProductForm({
-    Key? key,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
+    final productForm = Provider.of<ProductFormProvider>(context);
+    final product = productForm.product;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       width: double.infinity,
@@ -82,6 +108,13 @@ class _ProductForm extends StatelessWidget {
               height: 10,
             ),
             TextFormField(
+              onChanged: (value) => product.name = value,
+              validator: (value) {
+                if (value == null || value.length < 2) {
+                  return 'El nombre es obligatorio';
+                }
+              },
+              initialValue: product.name,
               decoration: InputDecorations.authInputDecoration(
                   hintText: 'Nombre del producto', labelText: 'Nombre:'),
             ),
@@ -89,6 +122,17 @@ class _ProductForm extends StatelessWidget {
               height: 30,
             ),
             TextFormField(
+              onChanged: (value) {
+                if (double.tryParse(value) == null) {
+                  product.price = 0;
+                } else {
+                  product.price = double.parse(value);
+                }
+              },
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^(\d+)?\.?\d{0,2}'))
+              ],
+              initialValue: '${product.price}',
               keyboardType: TextInputType.number,
               decoration: InputDecorations.authInputDecoration(
                   hintText: '150', labelText: 'Precio (\$):'),
@@ -99,10 +143,8 @@ class _ProductForm extends StatelessWidget {
             SwitchListTile.adaptive(
                 title: const Text('Disponible'),
                 activeColor: Colors.indigo,
-                value: true,
-                onChanged: (value) {
-                  //TODO
-                })
+                value: product.available,
+                onChanged: productForm.updateAvailability)
           ],
         ),
       ),
