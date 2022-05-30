@@ -14,6 +14,7 @@ class ProductsService extends ChangeNotifier {
 
   bool isLoading = true;
   bool isSaving = false;
+  bool isModified = false;
 
   File? newPictureFile;
 
