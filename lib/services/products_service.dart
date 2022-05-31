@@ -1,16 +1,19 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:productos_app/models/models.dart';
 import 'package:http/http.dart' as http;
+import 'package:productos_app/models/models.dart';
 
 class ProductsService extends ChangeNotifier {
   final String _baseUrl =
       'flutter-varios-9a670-default-rtdb.europe-west1.firebasedatabase.app';
   final List<Product> products = [];
   late Product selectedProduct;
+
+  //Necesitamos utilizar el token del usuario para decirle a firebase
+  //que tenemos permisos para cargar los productos
+  final storage = const FlutterSecureStorage();
 
   bool isLoading = true;
   bool isSaving = false;
@@ -26,7 +29,10 @@ class ProductsService extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    final url = Uri.https(_baseUrl, 'products.json');
+    final url = Uri.https(_baseUrl, 'products.json', {
+      'auth': await storage.read(key: 'idToken') ?? '',
+    });
+
     final resp = await http.get(url);
 
     final Map<String, dynamic> productsMap = json.decode(resp.body);
@@ -57,7 +63,9 @@ class ProductsService extends ChangeNotifier {
   }
 
   Future<String> createProduct(Product product) async {
-    final url = Uri.https(_baseUrl, 'products.json');
+    final url = Uri.https(_baseUrl, 'products.json', {
+      'auth': await storage.read(key: 'idToken') ?? '',
+    });
     final resp = await http.post(url, body: product.toJson());
 
     print(resp.body);
@@ -68,7 +76,9 @@ class ProductsService extends ChangeNotifier {
   }
 
   Future<String> updateProduct(Product product) async {
-    final url = Uri.https(_baseUrl, 'products/${product.id}.json');
+    final url = Uri.https(_baseUrl, 'products/${product.id}.json', {
+      'auth': await storage.read(key: 'idToken') ?? '',
+    });
     final resp = await http.put(url, body: product.toJson());
 
     print(resp.body);
@@ -111,7 +121,6 @@ class ProductsService extends ChangeNotifier {
 
     final resp = await http.Response.fromStream(streamResponse);
     if (resp.statusCode != 200 && resp.statusCode != 201) {
-      print('Algo salió mal');
       print(resp.body);
       return null;
     }

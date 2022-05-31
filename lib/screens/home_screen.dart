@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:productos_app/models/models.dart';
 import 'package:productos_app/screens/screens.dart';
 import 'package:productos_app/services/services.dart';
@@ -14,8 +13,8 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final productsService = Provider.of<ProductsService>(context);
-
-    if (productsService.isLoading) return LoadingScreen();
+    final authService = Provider.of<AuthService>(context, listen: false);
+    if (productsService.isLoading) return const LoadingScreen();
 
     productsService.products
         .sort(((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase())));
@@ -23,6 +22,14 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Productos'),
+        actions: [
+          IconButton(
+              onPressed: () {
+                authService.logout();
+                Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+              },
+              icon: const Icon(Icons.logout)),
+        ],
       ),
       body: ListView.builder(
         itemCount: productsService.products.length,

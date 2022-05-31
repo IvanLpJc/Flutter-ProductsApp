@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:productos_app/providers/login_form_provider.dart';
 import 'package:productos_app/screens/screens.dart';
+import 'package:productos_app/services/services.dart';
 import 'package:productos_app/ui/ui.dart';
 import 'package:productos_app/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
-import '../services/services.dart';
-
-class LoginScreen extends StatelessWidget {
-  static String routeName = 'Login';
-  const LoginScreen({Key? key}) : super(key: key);
+class RegisterScreen extends StatelessWidget {
+  static String routeName = 'Register';
+  const RegisterScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -48,9 +47,9 @@ class LoginScreen extends StatelessWidget {
                     overlayColor: MaterialStateProperty.all(
                         Colors.indigo.withOpacity(0.1))),
                 onPressed: () => Navigator.pushReplacementNamed(
-                    context, RegisterScreen.routeName),
+                    context, LoginScreen.routeName),
                 child: const Text(
-                  'Crear una nueva cuenta',
+                  '¿Dispones de una cuenta? Inicia sesión aquí',
                   style: TextStyle(fontSize: 18, color: Colors.black87),
                 ),
               ),
@@ -126,15 +125,13 @@ class _LoginForm extends StatelessWidget {
 
                     loginFormProvider.isLoading = true;
 
-                    final String? errorMessage = await authService.loginUser(
+                    final String? errorMessage = await authService.createUser(
                         loginFormProvider.email, loginFormProvider.password);
 
                     if (errorMessage == null) {
                       Navigator.pushReplacementNamed(
                           context, HomeScreen.routeName);
                     } else {
-                      print(errorMessage);
-                      NotificationsService.showSnackbar(errorMessage);
                       loginFormProvider.isLoading = false;
                     }
                     //Todo Validar
@@ -147,8 +144,8 @@ class _LoginForm extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
               child: Text(
                 loginFormProvider.isLoading
-                    ? 'Iniciando sesión...'
-                    : 'Iniciar sesión',
+                    ? 'Creando cuenta...'
+                    : 'Crear cuenta',
                 style: const TextStyle(color: Colors.white),
               ),
             ),

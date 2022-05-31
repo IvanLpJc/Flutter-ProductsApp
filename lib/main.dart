@@ -11,7 +11,10 @@ class AppState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => ProductsService())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => ProductsService()),
+        ChangeNotifierProvider(create: (_) => AuthService()),
+      ],
       child: const MyApp(),
     );
   }
@@ -25,12 +28,16 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Productos App',
-      initialRoute: HomeScreen.routeName,
+      initialRoute: LoginScreen.routeName,
       routes: {
+        CheckAuthScreen.routeName: (_) => const CheckAuthScreen(),
         HomeScreen.routeName: (_) => const HomeScreen(),
         LoginScreen.routeName: (_) => const LoginScreen(),
         ProductScreen.routeName: (_) => const ProductScreen(),
+        RegisterScreen.routeName: (_) => const RegisterScreen(),
       },
+      //Con esto tengo acceso al scaffold para la alerta a lo largo de la app
+      scaffoldMessengerKey: NotificationsService.messengerKey,
       theme: ThemeData.light().copyWith(
         scaffoldBackgroundColor: Colors.grey[300],
         appBarTheme: const AppBarTheme(
